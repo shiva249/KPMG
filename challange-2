@@ -1,0 +1,52 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Simple 3-tier environment
+
+Resources:
+  PresentationBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      AccessControl: PublicRead
+      WebsiteConfiguration:
+        IndexDocument: index.html
+
+  ApplicationInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      SecurityGroups:
+        - !Ref ApplicationSecurityGroup
+      KeyName: your-key-pair
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash
+          echo "Hello from the application tier!" > /var/www/html/index.html
+          yum update -y
+          yum install -y httpd
+          service httpd start
+          chkconfig httpd on
+
+  ApplicationSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable HTTP access
+      SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+
+  DatabaseInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceIdentifier: mydbinstance
+      AllocatedStorage: 20
+      DBInstanceClass: db.t2.micro
+      Engine: MySQL
+      MasterUsername: admin
+      MasterUserPassword: adminpassword
+      PubliclyAccessible: false
+
+Outputs:
+  WebsiteURL:
+    Description: URL for the presentation tier
+    Value: !GetAtt PresentationBucket.WebsiteURL
