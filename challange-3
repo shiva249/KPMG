@@ -1,0 +1,22 @@
+def get_nested_value(data, key):
+    keys = key.split('/')
+    current = data
+    
+    try:
+        for k in keys:
+            current = current[k]
+        return current
+    except (KeyError, TypeError):
+        # Handle cases where a key is not found or data is not a dictionary
+        return None
+
+# Example usage:
+object1 = {"a": {"b": {"c": "d"}}}
+key1 = "a/b/c"
+result1 = get_nested_value(object1, key1)
+print(result1)  # Output: "d"
+
+object2 = {"x": {"y": {"z": "a"}}}
+key2 = "x/y/z"
+result2 = get_nested_value(object2, key2)
+print(result2)  # Output: "a"
